@@ -13,7 +13,7 @@ typedef struct nframe
 
 numframe *nframe_readcsv(const char *filename, const char seperator, const int line_length);
 
-void nframe_show(numframe *ndat);
+void nframe_show(const numframe *ndat);
 
 void nframe_drop_inf_row(numframe *ndat);
 
@@ -23,7 +23,7 @@ void nframe_shuffle(numframe *ndat, int seed);
 
 void nframe_split_row(float ratio, numframe *original, numframe **ndat1, numframe **ndat2, bool shuffle, int seed);
 
-numframe *nframe_split_col(const int start, const int end, const int y_index, numframe *ndat);
+numframe *nframe_split_col(const int start, const int end, const int y_index, const numframe *ndat);
 
 numframe *nframe_join_y(numframe *ndat1, numframe *ndat2);
 

@@ -12,6 +12,7 @@ numframe *nframe_readcsv(const char *filename, const char seperator, const int l
         printf("Error reading csv\n");
         return NULL;
     }
+    char sep[2] = {seperator, '\0'};
     numframe *ndat = (numframe *)malloc(sizeof(numframe));
     char line[line_length];
     fseek(fp, 0, SEEK_END);
@@ -20,7 +21,7 @@ numframe *nframe_readcsv(const char *filename, const char seperator, const int l
     int rows = 0;
     rewind(fp);
     char rawdata[size];
-    memset(rawdata, 0, size);
+    memset(rawdata, 0, size * sizeof(char));
     while (fgets(line, line_length, fp) != NULL)
     {
         if (cols == 0)
@@ -32,11 +33,11 @@ numframe *nframe_readcsv(const char *filename, const char seperator, const int l
             }
             cols++;
             ndat->features = (char **)malloc(sizeof(char *) * cols);
-            char *token = strtok(line, &seperator);
+            char *token = strtok(line, sep);
             for (int i = 0; i < cols; i++)
             {
                 ndat->features[i] = strdup(token);
-                token = strtok(0, &seperator);
+                token = strtok(0, sep);
             }
             ndat->features[cols - 1][strcspn(ndat->features[cols - 1], "\n")] = '\0';
             continue;
@@ -56,18 +57,18 @@ numframe *nframe_readcsv(const char *filename, const char seperator, const int l
     ndat->cols = cols;
     ndat->rows = rows;
     ndat->arr = (float *)malloc(sizeof(float) * cols * rows);
-    char *token = strtok(rawdata, &seperator);
+    char *token = strtok(rawdata, sep);
     for (int i = 0; i < cols * rows; i++)
     {
         int res = sscanf(token, "%f", &ndat->arr[i]);
         if (res == 0)
             ndat->arr[i] = FLT_MAX;
-        token = strtok(0, &seperator);
+        token = strtok(0, sep);
     }
     return ndat;
 }
 
-void nframe_show(numframe *ndat)
+void nframe_show(const numframe *ndat)
 {
     if (ndat == NULL)
         return;
@@ -75,15 +76,15 @@ void nframe_show(numframe *ndat)
     int rows = ndat->rows;
     for (int i = 0; i < cols; i++)
     {
-        printf("%s\t", ndat->features[i]);
+        printf("%-20s", ndat->features[i]);
     }
     printf("\n");
     for (int i = 0; i < cols * rows; i++)
     {
         if (ndat->arr[i] == FLT_MAX)
-            printf("Inf\t");
+            printf("%-20s", "INF");
         else
-            printf("%.2f\t", ndat->arr[i]);
+            printf("%-20.2f", ndat->arr[i]);
         if ((i + 1) % cols == 0)
             printf("\n");
     }
@@ -201,7 +202,7 @@ void nframe_split_row(float ratio, numframe *original, numframe **ndat1, numfram
         (*ndat2)->arr[i - shape1] = original->arr[i];
 }
 
-numframe *nframe_split_col(const int start, const int end, const int y_index, numframe *ndat)
+numframe *nframe_split_col(const int start, const int end, const int y_index, const numframe *ndat)
 {
     if (ndat == NULL)
         return NULL;
@@ -256,17 +257,17 @@ numframe *nframe_join_y(numframe *ndat1, numframe *ndat2)
     {
         newdat->features[i] = strdup(ndat1->features[i]);
     }
-    for (int i = cols1; i < cols1 + cols2; i++)
+    for (int i = cols1; i < new_cols; i++)
     {
         newdat->features[i] = strdup(ndat2->features[i - cols1]);
     }
-    for (int i = 0; i < shape1; i++)
+    int i1 = 0, i2 = 0;
+    for (int i = 0; i < shape1 + shape2; i++)
     {
-        newdat->arr[i] = ndat1->arr[i];
-    }
-    for (int i = shape1; i < shape1 + shape2; i++)
-    {
-        newdat->arr[i] = ndat2->arr[i - shape1];
+        if (i % new_cols < cols1)
+            newdat->arr[i] = ndat1->arr[i1++];
+        else
+            newdat->arr[i] = ndat2->arr[i2++];
     }
     return newdat;
 }
