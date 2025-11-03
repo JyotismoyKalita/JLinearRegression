@@ -69,6 +69,8 @@ numframe *nframe_readcsv(const char *filename, const char seperator, const int l
 
 void nframe_show(numframe *ndat)
 {
+    if (ndat == NULL)
+        return;
     int cols = ndat->cols;
     int rows = ndat->rows;
     for (int i = 0; i < cols; i++)
@@ -89,6 +91,8 @@ void nframe_show(numframe *ndat)
 
 void nframe_drop_inf_row(numframe *ndat)
 {
+    if (ndat == NULL)
+        return;
     int cols = ndat->cols;
     int rows = ndat->rows;
     for (int i = 0; i < cols * rows; i++)
@@ -108,6 +112,8 @@ void nframe_drop_inf_row(numframe *ndat)
 
 void nframe_avg_inf_(numframe *ndat)
 {
+    if (ndat == NULL)
+        return;
     int cols = ndat->cols;
     int rows = ndat->rows;
     float res = 0;
@@ -142,6 +148,8 @@ void nframe_avg_inf_(numframe *ndat)
 
 void nframe_shuffle(numframe *ndat, int seed)
 {
+    if (ndat == NULL)
+        return;
     int rows = ndat->rows;
     int cols = ndat->cols;
     srand(seed);
@@ -159,8 +167,10 @@ void nframe_shuffle(numframe *ndat, int seed)
     }
 }
 
-void nframe_split(float ratio, numframe *original, numframe **ndat1, numframe **ndat2, bool shuffle, int seed)
+void nframe_split_row(float ratio, numframe *original, numframe **ndat1, numframe **ndat2, bool shuffle, int seed)
 {
+    if (original == NULL)
+        return;
     if (shuffle == 1)
         nframe_shuffle(original, seed);
     int cols = original->cols;
@@ -189,6 +199,76 @@ void nframe_split(float ratio, numframe *original, numframe **ndat1, numframe **
     (*ndat2)->arr = (float *)malloc(sizeof(float) * shape2);
     for (int i = shape1; i < original->rows * cols; i++)
         (*ndat2)->arr[i - shape1] = original->arr[i];
+}
+
+numframe *nframe_split_col(const int start, const int end, const int y_index, numframe *ndat)
+{
+    if (ndat == NULL)
+        return NULL;
+    int new_cols = end - start;
+    if (!(y_index > start && y_index < end))
+        new_cols++;
+    int col = ndat->cols;
+    int row = ndat->rows;
+    numframe *newdat = (numframe *)malloc(sizeof(numframe));
+    newdat->cols = new_cols;
+    newdat->rows = row;
+    newdat->features = (char **)malloc(sizeof(char *) * new_cols);
+    newdat->arr = (float *)malloc(sizeof(float) * row * new_cols);
+    int ni = 0;
+    for (int i = start; i <= end; i++)
+    {
+        if (i == y_index)
+            continue;
+        newdat->features[ni++] = strdup(ndat->features[i]);
+    }
+    ni = 0;
+    for (int i = start; i < col * row; i++)
+    {
+        if (i % col == y_index || i % col < start || i % col > end)
+            continue;
+        newdat->arr[ni++] = ndat->arr[i];
+    }
+    return newdat;
+}
+
+numframe *nframe_join_y(numframe *ndat1, numframe *ndat2)
+{
+    if (ndat1 == NULL || ndat2 == NULL)
+        return NULL;
+    if (ndat1->rows != ndat2->rows)
+    {
+        printf("Shape Do not Match to join\n");
+        return NULL;
+    }
+    int cols1 = ndat1->cols;
+    int cols2 = ndat2->cols;
+    int new_cols = cols1 + cols2;
+    int rows = ndat1->rows;
+    int shape1 = cols1 * rows;
+    int shape2 = cols2 * rows;
+    numframe *newdat = (numframe *)malloc(sizeof(numframe));
+    newdat->cols = new_cols;
+    newdat->rows = rows;
+    newdat->features = (char **)malloc(sizeof(char *) * new_cols);
+    newdat->arr = (float *)malloc(sizeof(float) * rows * new_cols);
+    for (int i = 0; i < cols1; i++)
+    {
+        newdat->features[i] = strdup(ndat1->features[i]);
+    }
+    for (int i = cols1; i < cols1 + cols2; i++)
+    {
+        newdat->features[i] = strdup(ndat2->features[i - cols1]);
+    }
+    for (int i = 0; i < shape1; i++)
+    {
+        newdat->arr[i] = ndat1->arr[i];
+    }
+    for (int i = shape1; i < shape1 + shape2; i++)
+    {
+        newdat->arr[i] = ndat2->arr[i - shape1];
+    }
+    return newdat;
 }
 
 void nframe_destroy(numframe *ndat)

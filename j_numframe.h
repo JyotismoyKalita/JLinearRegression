@@ -21,7 +21,11 @@ void nframe_avg_inf_(numframe *ndat);
 
 void nframe_shuffle(numframe *ndat, int seed);
 
-void nframe_split(float ratio, numframe *original, numframe **ndat1, numframe **ndat2, bool shuffle, int seed);
+void nframe_split_row(float ratio, numframe *original, numframe **ndat1, numframe **ndat2, bool shuffle, int seed);
+
+numframe *nframe_split_col(const int start, const int end, const int y_index, numframe *ndat);
+
+numframe *nframe_join_y(numframe *ndat1, numframe *ndat2);
 
 void nframe_destroy(numframe *ndat);
 

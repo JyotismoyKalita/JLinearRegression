@@ -9,59 +9,47 @@ float square(float x)
     return x * x;
 }
 
-float cost_function(numframe *ndat, int x_index, int y_index, float m, float b)
+float cost_function(numframe *x, numframe *y, float w, float b)
 {
     float cost = 0;
-    int n = ndat->rows;
-    int cols = ndat->cols;
+    int n = y->rows;
     for (int i = 1; i < n; i++)
     {
-        float actual = m * ndat->arr[i * cols + x_index] + b;
-        float expected = ndat->arr[i * cols + y_index];
+        float actual = w * x->arr[i] + b;
+        float expected = y->arr[i];
         cost += square(actual - expected);
     }
     return cost / 2 * (float)n;
 }
 
-float dw(numframe *ndat, int x_index, int y_index, float m, float b)
+void gradient(float *dw, float *db, numframe *x, numframe *y, float w, float b)
 {
-    float p_dw = 0;
-    int n = ndat->rows;
-    int cols = ndat->cols;
+    float t_dw = 0, t_db = 0;
+    int n = y->rows;
     for (int i = 0; i < n; i++)
     {
-        float inner = m * ndat->arr[i * cols + x_index] + b;
-        float outer = ndat->arr[i * cols + x_index] * (inner - ndat->arr[i * cols + y_index]);
-        p_dw += outer;
+        float inner = w * x->arr[i] + b;
+        float outer = inner - y->arr[i];
+        t_dw += outer * x->arr[i];
+        t_db += outer;
     }
-    return p_dw / (float)n;
+    *dw = t_dw / (float)n;
+    *db = t_db / (float)n;
 }
 
-float db(numframe *ndat, int x_index, int y_index, float m, float b)
+void gradient_decent(numframe *x, numframe *y, float alpha, int iterations, float minimum_cost, bool verbose)
 {
-    float p_db = 0;
-    int n = ndat->rows;
-    int cols = ndat->cols;
-    for (int i = 0; i < n; i++)
-    {
-        float inner = m * ndat->arr[i * cols + x_index] + b;
-        float outer = inner - ndat->arr[i * cols + y_index];
-        p_db += outer;
-    }
-    return p_db / (float)n;
-}
-
-void gradient_decent(numframe *ndat, int x_index, int y_index, float alpha, int iterations, float minimum_cost, bool verbose)
-{
-    if (ndat == NULL)
+    if (x == NULL || y == NULL)
         return;
     float w = 0;
     float b = 0;
     for (int i = 0; i < iterations; i++)
     {
-        w = w - alpha * dw(ndat, x_index, y_index, w, b);
-        b = b - alpha * db(ndat, x_index, y_index, w, b);
-        float cost = cost_function(ndat, x_index, y_index, w, b);
+        float dw, db;
+        gradient(&dw, &db, x, y, w, b);
+        w = w - alpha * dw;
+        b = b - alpha * db;
+        float cost = cost_function(x, y, w, b);
         if (verbose == 1)
             printf("Cost at Iteration %d: %f\n", i, cost);
         if (cost < minimum_cost)
@@ -73,14 +61,13 @@ void gradient_decent(numframe *ndat, int x_index, int y_index, float alpha, int 
 int main()
 {
     numframe *ndat = nframe_readcsv("data.csv", ',', 128);
-    nframe_show(ndat);
-    numframe *ndat1, *ndat2;
-    nframe_split(0.7, ndat, &ndat1, &ndat2, 1, 42);
-    nframe_show(ndat1);
-    nframe_show(ndat2);
-    gradient_decent(ndat1, 0, 1, 0.01, 10000, 0.0001, 0);
+    numframe *x_train = nframe_split_col(0, 0, 1, ndat);
+    nframe_show(x_train);
+    numframe *y_train = nframe_split_col(1, 1, 0, ndat);
+    nframe_show(y_train);
+    gradient_decent(x_train, y_train, 0.01, 10000, 0.0001, 0);
     nframe_destroy(ndat);
-    nframe_destroy(ndat1);
-    nframe_destroy(ndat2);
+    nframe_destroy(x_train);
+    nframe_destroy(y_train);
     return 0;
 }
