@@ -4,15 +4,7 @@
 
 typedef struct lr_mdl lr_model;
 
-float square(float x);
-
 void lr_train_test_split(numframe **x_train, numframe **y_train, numframe **x_test, numframe **y_test, numframe *original, const float ratio, const bool shuffle, const int seed, const int start, const int end, const int y_index);
-
-float cost_function(const numframe *x, const numframe *y, const float *w, const float b);
-
-void gradient(float *dw, float *db, const numframe *x, const numframe *y, const float *w, const float b);
-
-void gradient_decent(const numframe *x, const numframe *y, const float alpha, const int iter, const float minimum_cost, const bool verbose, lr_model *model);
 
 lr_model *lr_model_fit(const numframe *x, const numframe *y, const float alpha, const int iter, const float minimum_cost, const bool verbose);
 
