@@ -4,19 +4,6 @@
 #include <float.h>
 #include "j_numframe.h"
 
-typedef struct nframe
-{
-    int rows;
-    int cols;
-    float *arr;
-    char **features;
-} numframe;
-
-float square(float x)
-{
-    return x * x;
-}
-
 numframe *nframe_readcsv(const char *filename, const char seperator, const int line_length)
 {
     FILE *fp = fopen(filename, "r");

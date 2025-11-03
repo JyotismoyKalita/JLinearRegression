@@ -4,6 +4,11 @@
 #include <float.h>
 #include "j_numframe.h"
 
+float square(float x)
+{
+    return x * x;
+}
+
 float cost_function(numframe *ndat, int x_index, int y_index, float m, float b)
 {
     float cost = 0;
