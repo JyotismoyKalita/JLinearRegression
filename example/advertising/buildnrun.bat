@@ -1,0 +1,1 @@
+gcc example.c ../../headers/j_lr.c ../../headers/j_numframe.c -lm -o example && example.exe

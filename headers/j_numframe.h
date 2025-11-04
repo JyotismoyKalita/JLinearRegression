@@ -27,6 +27,10 @@ numframe *nframe_split_col(const int start, const int end, const int y_index, co
 
 numframe *nframe_join_y(numframe *ndat1, numframe *ndat2);
 
+numframe *nframe_slice_rows(const numframe *ndat, int start, int end);
+
+numframe *nframe_exclude_rows(const numframe *ndat, int start, int end);
+
 void nframe_destroy(numframe *ndat);
 
 #endif

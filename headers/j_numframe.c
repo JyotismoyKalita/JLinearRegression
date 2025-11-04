@@ -312,6 +312,54 @@ numframe *nframe_join_y(numframe *ndat1, numframe *ndat2)
     return newdat;
 }
 
+numframe *nframe_slice_rows(const numframe *ndat, int start, int end)
+{
+    int rows = end - start;
+    int cols = ndat->cols;
+
+    numframe *out = malloc(sizeof(numframe));
+    out->rows = rows;
+    out->cols = cols;
+
+    out->features = malloc(sizeof(char *) * cols);
+    for (int i = 0; i < cols; i++)
+        out->features[i] = strdup(ndat->features[i]);
+
+    out->arr = malloc(sizeof(float) * rows * cols);
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++)
+            out->arr[i * cols + j] = ndat->arr[(start + i) * cols + j];
+
+    return out;
+}
+
+numframe *nframe_exclude_rows(const numframe *ndat, int start, int end)
+{
+    int rows = ndat->rows - (end - start);
+    int cols = ndat->cols;
+
+    numframe *out = malloc(sizeof(numframe));
+    out->rows = rows;
+    out->cols = cols;
+
+    out->features = malloc(sizeof(char *) * cols);
+    for (int i = 0; i < cols; i++)
+        out->features[i] = strdup(ndat->features[i]);
+
+    out->arr = malloc(sizeof(float) * rows * cols);
+
+    int idx = 0;
+    for (int i = 0; i < ndat->rows; i++)
+    {
+        if (i >= start && i < end)
+            continue;
+        for (int j = 0; j < cols; j++)
+            out->arr[idx * cols + j] = ndat->arr[i * cols + j];
+        idx++;
+    }
+    return out;
+}
+
 void nframe_destroy(numframe *ndat)
 {
     if (ndat == NULL)
