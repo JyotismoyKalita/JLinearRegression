@@ -1,1 +1,0 @@
-gcc example.c ../headers/j_lr.c ../headers/j_numframe.c -o example && example.exe

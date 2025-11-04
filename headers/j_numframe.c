@@ -4,6 +4,22 @@
 #include <float.h>
 #include "j_numframe.h"
 
+void strip_char(char *str, int len)
+{
+    str[len - 1] = '\0';
+    for (int i = 0; i < len; i++)
+        str[i] = str[i + 1];
+}
+
+void *arr_rightshift(char *arr, int start, int *size)
+{
+    *size = *size + 1;
+    for (int i = *size; i > start + 1; i--)
+    {
+        arr[i] = arr[i - 1];
+    }
+}
+
 numframe *nframe_readcsv(const char *filename, const char seperator, const int line_length)
 {
     FILE *fp = fopen(filename, "r");
@@ -20,12 +36,13 @@ numframe *nframe_readcsv(const char *filename, const char seperator, const int l
     int cols = 0;
     int rows = 0;
     rewind(fp);
-    char rawdata[size];
+    char rawdata[size * 2];
     memset(rawdata, 0, size * sizeof(char));
     while (fgets(line, line_length, fp) != NULL)
     {
         if (cols == 0)
         {
+            line[strcspn(line, "\n")] = '\0';
             for (int i = 0; i < strlen(line); i++)
             {
                 if (line[i] == seperator)
@@ -36,22 +53,33 @@ numframe *nframe_readcsv(const char *filename, const char seperator, const int l
             char *token = strtok(line, sep);
             for (int i = 0; i < cols; i++)
             {
-                ndat->features[i] = strdup(token);
+                int token_length = strlen(token);
+                char temp[token_length];
+                strcpy(temp, token);
+                if (temp[0] == '\"' && temp[token_length - 1] == '\"')
+                    strip_char(temp, token_length);
+                if (strlen(temp) == 0)
+                    sprintf(temp, "%d", i);
+                ndat->features[i] = strdup(temp);
                 token = strtok(0, sep);
             }
             ndat->features[cols - 1][strcspn(ndat->features[cols - 1], "\n")] = '\0';
             continue;
         }
-        line[strcspn(line, "\n")] = seperator;
-        int line_first_comma = strcspn(line, ",");
-        if (line[line_first_comma + 1] == ',')
-        {
-            line[line_first_comma + 1] = 'A';
-            line[line_first_comma + 2] = ',';
-            line[line_first_comma + 3] = '\0';
-        }
+        int n_idx = strcspn(line, "\n");
+        line[n_idx] = seperator;
+        line[n_idx + 1] = '\0';
         strcat(rawdata, line);
         rows++;
+    }
+    int raw_len = strlen(rawdata);
+    for (int i = 0; i < raw_len - 1; i++)
+    {
+        if (rawdata[i] == ',' && rawdata[i + 1] == ',')
+        {
+            arr_rightshift(rawdata, i, &raw_len);
+            rawdata[i + 1] = 'A';
+        }
     }
     fclose(fp);
     ndat->cols = cols;
@@ -60,9 +88,21 @@ numframe *nframe_readcsv(const char *filename, const char seperator, const int l
     char *token = strtok(rawdata, sep);
     for (int i = 0; i < cols * rows; i++)
     {
-        int res = sscanf(token, "%f", &ndat->arr[i]);
-        if (res == 0)
+        int token_length = strlen(token);
+        char temp[token_length];
+        strcpy(temp, token);
+        if (temp[0] == '\"' && temp[token_length - 1] == '\"')
+            strip_char(temp, token_length);
+        if (strlen(temp) == 0)
+        {
             ndat->arr[i] = FLT_MAX;
+        }
+        else
+        {
+            int res = sscanf(temp, "%f", &ndat->arr[i]);
+            if (res == 0)
+                ndat->arr[i] = FLT_MAX;
+        }
         token = strtok(0, sep);
     }
     return ndat;
@@ -76,15 +116,15 @@ void nframe_show(const numframe *ndat)
     int rows = ndat->rows;
     for (int i = 0; i < cols; i++)
     {
-        printf("%-20s", ndat->features[i]);
+        printf("%-10s", ndat->features[i]);
     }
     printf("\n");
     for (int i = 0; i < cols * rows; i++)
     {
         if (ndat->arr[i] == FLT_MAX)
-            printf("%-20s", "INF");
+            printf("%-10s", "INF");
         else
-            printf("%-20.2f", ndat->arr[i]);
+            printf("%-10.2f", ndat->arr[i]);
         if ((i + 1) % cols == 0)
             printf("\n");
     }

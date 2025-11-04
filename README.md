@@ -143,7 +143,7 @@ Every generated numframe must be freed with this function to avoid memory leak. 
 
 ## j_lr.h
 
-The `j_lr.h` contains the functions to perform linear regressions on the numframes.
+The `j_lr.h` contains the functions to perform linear regressions on the numframes. It strictly uses the _gradient descent_ algorithm for performing linear regression.
 
 It also allows to `save` the generated model. `load` a pretrained model and `retrain` a pretrained model.
 
@@ -154,11 +154,12 @@ typedef struct lr_mdl
 {
     float b;
     int count;
+    unsigned char normalize;
     float w[];
 } lr_model;
 ```
 
-`float b` is the bias. `int count` is the count of weights. `float w[]` is a flexible array storing the value of weights. However this struct is not directly accessible. And can only be generated, saved, loaded, trained, retrained using the functions to avoid corruption of data.
+`float b` is the bias. `int count` is the count of weights. `float w[]` is a flexible array storing the value of weights. `unsigned char normalize` keeps track if model needs to normalize the data. However this struct is not directly accessible. And can only be generated, saved, loaded, trained, retrained using the functions to avoid corruption of data.
 
 ### Functions-LR 
 
@@ -173,10 +174,17 @@ Splits the original numframe into x and y and their train and test splits. Four 
 ---
 
 ```c
-lr_model *lr_model_fit(const numframe *x, const numframe *y, const float alpha, const int iter, const float minimum_cost, const bool verbose);
+lr_model *lr_model_fit(const numframe *x, const numframe *y, const float alpha, const int iter, const float minimum_cost, const bool verbose, const bool normalize);
 ```
 
-Fits a model to the training data. `x` is the input numframe. `y` is the numframe containing output values for training. `alpha` is the learning rate. `iter` is the maximum iterations to perform. `minimum_cost` is the minimum cost reaching which, the iterations stops. Setting `verbose` to 1 displays cost at each iteration. This returns an `lr_model` pointer pointing to the generated model.
+Fits a model to the training data. `x` is the input numframe. `y` is the numframe containing output values for training. `alpha` is the learning rate. `iter` is the maximum iterations to perform. `minimum_cost` is the minimum cost reaching which, the iterations stops. Setting `verbose` to
+
+- 0: Displays nothing
+- 1: Displays Train MSE
+- 2: Displays the Final Function
+- 3: Displays cost at each iteration
+
+`normalize` parameter specifies whether the data needs to be normalizd. This returns an `lr_model` pointer pointing to the generated model.
 
 ---
 
@@ -217,6 +225,14 @@ lr_model *lr_model_load(const char *filename);
 ```
 
 Loads a saved model binary file into the memory through the `lr_model` struct.
+
+---
+
+```c
+void *lr_model_show_coeff(const lr_model *model, char **feature_list);
+```
+
+Displays the coefficients in `model` for each feature in `feature_list`.
 
 ---
 
