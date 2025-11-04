@@ -41,7 +41,7 @@ gcc example.c path/to/j_numframe.c -o example
 If you are also using the **Linear Regression** header file:
 
 ```sh
-gcc example.c path/to/j_lr.c path/to/j_numframe.c -o example
+gcc example.c path/to/j_lr.c path/to/j_numframe.c -lm -o example
 ./example
 ```
 
