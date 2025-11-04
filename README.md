@@ -159,7 +159,7 @@ Every generated numframe must be freed with this function to avoid memory leak. 
 
 ## j_lr.h
 
-The `j_lr.h` contains the functions to perform linear regressions on the numframes. It strictly uses the _gradient descent_ algorithm for performing linear regression.
+The `j_lr.h` contains the functions to perform linear regressions on the numframes.
 
 It also allows to `save` the generated model. `load` a pretrained model and `retrain` a pretrained model.
 
