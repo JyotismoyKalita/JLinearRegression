@@ -15,6 +15,30 @@ cd JLinearRegression
 The header files are located in the `headers` folder.  
 The example fils are located in the `example` folder.
 
+```
+.
+└── 📂 JLinearRegression/
+    ├── 📂 example/
+    │   ├── 📂 boston-housing/
+    │   │   ├── ©️ example.c
+    │   │   ├── 📄 buildnrun.bat
+    │   │   ├── 📄 buildnrun.sh
+    │   │   └── 📊 Boston.csv
+    │   └── 📂 advertising/
+    │       ├── ©️ example.c
+    │       ├── 📄 buildnrun.bat
+    │       ├── 📄 buildnrun.sh
+    │       └── 📊 advertising.csv
+    ├── 📂 headers/
+    │   ├── ©️ j_lr.c
+    │   ├── 📄 j_lr.h
+    │   ├── ©️ j_numframe.c
+    │   └── 📄 j_numframe.h
+    ├── ❗ .gitignore
+    ├── 📗 Readme.md
+    └── 🪪 License
+```
+
 ### Including in C File
 
 To use the **Numframe** header file only, write in your c file:
@@ -43,6 +67,52 @@ If you are also using the **Linear Regression** header file:
 ```sh
 gcc example.c path/to/j_lr.c path/to/j_numframe.c -lm -o example
 ./example
+```
+
+## Quick Example
+
+### Training a model
+
+```c
+numframe* data = nframe_load_csv("advertising.csv", ',', 1);
+numframe *x_train, *y_train, *x_test, *y_test;
+
+lr_train_test_split(&x_train, &y_train, &x_test, &y_test,
+                    data, 0.8, true, 42, 0, 2, 3);
+
+lr_model* model = lr_model_fit(x_train, y_train,
+                               0.001, 10000, 0, false,
+                               1,     // enable normalization
+                               0.0,   // L1
+                               0.0);  // L2
+
+numframe* pred  = lr_model_predict(x_test, model, "Pred");
+printf("MSE = %f\n", lr_calculate_mse(pred, y_test));
+lr_model_destroy(model);
+```
+
+### Cross-Validation + GridSearch
+
+```c
+float alphas[] = {0.001};
+float l1s[] = {0, 0.01, 0.1, 1};
+float l2s[] = {0, 0.01, 0.1, 1};
+
+lr_model* best = lr_gridsearchcv(
+    x_train, y_train,
+    1, 10000,
+    alphas, 1,
+    l1s, 4,
+    l2s, 4,
+    5 // 5-Fold CV
+);
+```
+
+### Saving Models
+
+```c
+lr_model_save("model.bin", model);
+lr_model* loaded = lr_model_load("model.bin");
 ```
 
 ## j_numframe.h
