@@ -136,6 +136,22 @@ Combines two numframes along the y-axis i.e. combines all of their columns toget
 ---
 
 ```c
+numframe *nframe_slice_rows(const numframe *ndat, int start, int end);
+```
+
+Returns a new numframe from `start` to `end` of `ndat`
+
+---
+
+```c
+numframe *nframe_exclude_rows(const numframe *ndat, int start, int end);
+```
+
+Returns a new numframe excluding the rows from `start` to `end` of `ndat`
+
+---
+
+```c
 void nframe_destroy(numframe *ndat);
 ```
 
@@ -209,6 +225,49 @@ float lr_calculate_mse(const numframe *predict, const numframe *y);
 ```
 
 Returns the Mean Sqaured Error value calculated using a numframe containig the predicted values `predict` and a numframe containing the actual values `y`.
+
+```c
+float lr_r2_score(const numframe *predict, const numframe *y);
+```
+
+Returns R2 score calculated using a numframe containig the predicted values `predict` and a numframe containing the actual values `y`.
+
+```c
+float lr_adjusted_r2_score(float r2, int n, int p);
+```
+
+Returns Adjusted R2 score calculated using the `r2` value and no of sampes `n` and no of features `p`.
+
+---
+
+```c
+lr_model *lr_gridsearch(numframe *x, const numframe *y, const unsigned char normalize, const int iterations, const float *alphas, const int num_alphas, const float *l1, const int num_l1s, const float *l2, const int num_l2s);
+```
+
+Searches for the best parameters with respect to R2 score generated using them. Pass array containing values of the parameter e.g. `*alphas` and the no. of elements in them `num_alphas`. This returns the model trained with those parameters which gave the best R2.
+
+---
+
+```c
+float lr_kfold_score(numframe *x, numframe *y, int k,
+                     float alpha, float l1, float l2,
+                     unsigned char normalize, int iterations);
+```
+
+Returns K-Fold score for input `x` and `y` with `k` folds and other required parameters.
+
+---
+
+```c
+lr_model *lr_gridsearchcv(numframe *x, numframe *y,
+                          unsigned char normalize, int iterations,
+                          const float *alphas, int num_alphas,
+                          const float *l1s, int num_l1s,
+                          const float *l2s, int num_l2s,
+                          int k);
+```
+
+Searches for best parameters with Cross-Validation to avoid Overfitting on the training data.
 
 ---
 
