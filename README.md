@@ -1,6 +1,6 @@
 # JLinearRegression - j_lr.h & j_numframe.h
 
-Header files built in C to perform Linear Regression  
+A lightweight, pure-C machine learning library for Linear Regression  
 _- by Jyotismoy Kalita_  
 
 ## Usage
@@ -20,19 +20,19 @@ The example fils are located in the `example` folder.
 └── 📂 JLinearRegression/
     ├── 📂 example/
     │   ├── 📂 boston-housing/
-    │   │   ├── ©️ example.c
+    │   │   ├── 📄 example.c
     │   │   ├── 📄 buildnrun.bat
     │   │   ├── 📄 buildnrun.sh
-    │   │   └── 📊 Boston.csv
+    │   │   └── 📄 Boston.csv
     │   └── 📂 advertising/
-    │       ├── ©️ example.c
+    │       ├── 📄 example.c
     │       ├── 📄 buildnrun.bat
     │       ├── 📄 buildnrun.sh
-    │       └── 📊 advertising.csv
+    │       └── 📄 advertising.csv
     ├── 📂 headers/
-    │   ├── ©️ j_lr.c
+    │   ├── 📄 j_lr.c
     │   ├── 📄 j_lr.h
-    │   ├── ©️ j_numframe.c
+    │   ├── 📄 j_numframe.c
     │   └── 📄 j_numframe.h
     ├── ❗ .gitignore
     ├── 📗 Readme.md
