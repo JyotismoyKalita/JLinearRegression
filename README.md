@@ -161,7 +161,7 @@ typedef struct lr_mdl
 
 `float b` is the bias. `int count` is the count of weights. `float w[]` is a flexible array storing the value of weights. `unsigned char normalize` keeps track if model needs to normalize the data. However this struct is not directly accessible. And can only be generated, saved, loaded, trained, retrained using the functions to avoid corruption of data.
 
-### Functions-LR 
+### Functions-LR  
 
 ---
 
